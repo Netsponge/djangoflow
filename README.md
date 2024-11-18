@@ -52,3 +52,10 @@ git add .
 git commit -m "first commit"
 ````
 
+## install and run compressor 
+
+Compressor is an 
+
+```shell
+python -m pip install django-compressor
+```

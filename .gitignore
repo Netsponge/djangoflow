@@ -1,5 +1,5 @@
 
-my_project
+
 core/.venv
 *.sqlite3
 __pycache__
