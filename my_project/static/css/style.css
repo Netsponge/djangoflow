@@ -31,8 +31,10 @@ main {
     place-content: center;
 }
 
-h1, p {
+h1 {
     text-align: center;
+    padding-inline-start: 2rem;
+    margin: 1rem;
 }
 
 a {
@@ -43,4 +45,22 @@ color: rgb(177, 177, 177);
 
 a:hover {
     opacity: .85;
+    color: #563cff;
+}
+
+.blogtxt {
+
+   
+    background-color: whitesmoke;
+    border-radius: 1rem;
+    color: #353535;
+    text-align: justify;
+    line-height: 1.6; 
+    word-spacing: 0.05em; 
+    width:100vh; 
+    height: auto; 
+    overflow: hidden; 
+    display: block;
+    padding: 1rem;
+    box-shadow: #353535;
 }
