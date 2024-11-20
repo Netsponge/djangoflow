@@ -7,7 +7,7 @@
 body { 
     min-height: 100vh;
     place-content: center;
-    font-size: 2rem; 
+    font-size: 1.5rem; 
     font-family: Arial, sans-serif; 
     background-image: linear-gradient(160deg, #563cff 0%, #80D0C7 100%);
     color: whitesmoke; }
@@ -18,7 +18,7 @@ body {
     width: 100%;
 
     padding: 1rem;
-    font-size: 2.5rem;
+    font-size: 1.5rem;
     background-color: rgb(255, 255, 255);
     color: white;
 
