@@ -14,10 +14,8 @@ body {
 }
 
 .navbar {
-  position: fixed;
   top: 0px;
   width: 100%;
-
   padding: 1rem;
   font-size: 1.5rem;
   background-color: rgb(255, 255, 255);
@@ -58,5 +56,6 @@ a:hover {
   overflow: hidden;
   display: block;
   padding: 1rem;
+  margin: 2rem;
   box-shadow: #353535;
 }
