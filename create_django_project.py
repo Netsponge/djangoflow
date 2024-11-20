@@ -264,7 +264,7 @@ def setup_project():
     print(f"Setting up the '{PROJECT_NAME}' project...")
     create_directory(PROJECT_NAME)
     create_directory(CORE_DIR)
-    #copyfile('files/.gitignore', '.gitignore')
+    #copyfile('files/.gitignore', '.gitignore') rajout templates ainsi que le css et le html
     #copyfile('files/README.md', 'README.md')
     create_virtual_environment()
     activate_virtual_environment()
