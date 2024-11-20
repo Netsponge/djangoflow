@@ -15,7 +15,7 @@ STATIC_DIR = os.path.join(BASE_DIR, "static")  # Static files directory
 
 # Content for the .gitignore file
 GITIGNORE_CONTENT = """
-my_project
+.DS_Store
 core/.venv
 *.sqlite3
 __pycache__
@@ -264,6 +264,8 @@ def setup_project():
     print(f"Setting up the '{PROJECT_NAME}' project...")
     create_directory(PROJECT_NAME)
     create_directory(CORE_DIR)
+    #copyfile('files/.gitignore', '.gitignore')
+    #copyfile('files/README.md', 'README.md')
     create_virtual_environment()
     activate_virtual_environment()
     install_django()
