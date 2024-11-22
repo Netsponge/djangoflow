@@ -31,6 +31,7 @@ def load_external_template(template_type='home', template_path='files/'):
         'layout': 'layout_template.html'
     }
     
+    
     if template_type not in template_files:
         raise ValueError(f"Type de template non valide: {template_type}")
     
