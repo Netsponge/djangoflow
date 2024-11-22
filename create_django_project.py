@@ -77,33 +77,10 @@ def update_allowed_hosts(settings_file):
     
     print("Updated ALLOWED_HOSTS to include '127.0.0.1' in settings.py")
 
-def style_css(static_dir, style_css_name, content="body { text-align: center; font-size: 2rem; font-family: Arial, sans-serif; background-color: slateblue; color: whitesmoke; }"):
-    css_dir = os.path.join(static_dir, "css")
-
-    if not os.path.exists(css_dir):
-        os.makedirs(css_dir)
-    file_path = os.path.join(css_dir, style_css_name)
-    with open(file_path, 'w') as file:
-        file.write(content)
-    
-    print(f"Fichier CSS créé : {file_path}")
 
 def create_home_html(templates_dir, file_name):
     # HTML content for home.html with the specified structure
-    content = """<!DOCTYPE html>
-    {% load static %}
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home</title>
-     <link rel="stylesheet" href="{% static 'css/style.css' %} ">
-</head>
-<body>
-    <h1>Hello-World</h1>
-    <p>Check out our <a href="/about">About</a> page.</p>
-</body>
-</html>"""
+    
 
     # Creates the specified directory if it doesn't exist
     if not os.path.exists(templates_dir):
@@ -112,28 +89,9 @@ def create_home_html(templates_dir, file_name):
     # Constructs the full file path
     file_path = os.path.join(templates_dir, file_name)
 
-    # Creates the file and writes the content
-    with open(file_path, 'w') as file:
-        file.write(content)
-    
-    print(f"HTML file created: {file_path}")
-
-
 def create_about_html(templates_dir, file_name):
     # HTML content for home.html with the specified structure
-    content = """<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About</title>
-</head>
-<body>
-    <h1>About</h1>
-    <p>Check out our <a href="/">Home</a> page.</p>
-</body>
-</html>"""
-
+    
 # Creates the specified directory if it doesn't exist
     if not os.path.exists(templates_dir):
         os.makedirs(templates_dir)
@@ -141,9 +99,6 @@ def create_about_html(templates_dir, file_name):
     # Constructs the full file path
     file_path = os.path.join(templates_dir, file_name)
 
-    # Creates the file and writes the content
-    with open(file_path, 'w') as file:
-        file.write(content)
 
 def create_gitignore():
     # Creates a .gitignore file with the specified rules.
@@ -276,7 +231,7 @@ def setup_project():
     create_home_html(TEMPLATES_DIR, "home.html")
     create_about_html(TEMPLATES_DIR, "about.html")  # Creates the home.html file in the templates directory
     create_directory(STATIC_DIR)
-    style_css(STATIC_DIR, "style.css")  # Creates the CSS file in the static directory
+    
     create_views_py(CORE_DIR, "views.py")
     update_urls_py(CORE_DIR, "urls.py")
     update_settings(CORE_DIR, "settings.py")
