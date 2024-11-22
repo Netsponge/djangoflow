@@ -2,8 +2,6 @@ import os
 import subprocess
 import sys
 from colorama import Fore, init
-from django.conf import settings
-from django.template import Template, Context
 
 init()
 
@@ -23,20 +21,25 @@ core/.venv
 __pycache__
 """
 
-def load_external_template(template_path='files/home_template.html'):
+def load_external_template(template_type='home', template_path='files/'):
     """
     Charge un template HTML depuis un fichier externe
-    
-    Args:
-        template_path (str): Chemin du fichier template
-    
-    Returns:
-        str: Contenu du template rendu
     """
-    # Ajustez le chemin de base
-    full_path = os.path.join(os.getcwd(), template_path)
+    template_files = {
+        'home': 'home_template.html',
+        'about': 'about_template.html',
+        'layout': 'layout_template.html'
+    }
     
-
+    if template_type not in template_files:
+        raise ValueError(f"Type de template non valide: {template_type}")
+    
+    full_path = os.path.join(os.getcwd(), template_path, template_files[template_type])
+    
+    # Vérifier si le fichier existe
+    if not os.path.exists(full_path):
+        raise FileNotFoundError(f"Le fichier template {full_path} n'existe pas")
+    
     # Lire le contenu du fichier
     with open(full_path, 'r', encoding='utf-8') as file:
         template_content = file.read()
@@ -83,35 +86,29 @@ def update_allowed_hosts(settings_file):
     
     print("Updated ALLOWED_HOSTS to include '127.0.0.1' in settings.py")
 
-def create_home_html(templates_dir, file_name='home.html'):
+def create_template(templates_dir, template_type='home'):
+    """
+    Crée un fichier de template dans le dossier templates
+    """
     os.makedirs(templates_dir, exist_ok=True)
+    
+    template_files = {
+        'home': 'home.html',
+        'about': 'about.html',
+        'layout': 'layout.html'
+    }
+    
+    file_name = template_files[template_type]
     file_path = os.path.join(templates_dir, file_name)
     
-    template_content = load_external_template()
+    try:
+        template_content = load_external_template(template_type)
+    except Exception as e:
+        print(f"Erreur lors du chargement du template {template_type}: {e}")
+        return
     
     with open(file_path, 'w', encoding='utf-8') as file:
         file.write(template_content)
-    
-    print(f"Le fichier {file_name} a été créé dans {templates_dir}")
-
-def create_about_html(templates_dir, file_name='about.html'):
-    os.makedirs(templates_dir, exist_ok=True)
-    file_path = os.path.join(templates_dir, file_name)
-    
-    default_content = """
-<!DOCTYPE html>
-<html>
-<head>
-    <title>About Page</title>
-</head>
-<body>
-    <h1>About Us</h1>
-</body>
-</html>
-"""
-    
-    with open(file_path, 'w', encoding='utf-8') as file:
-        file.write(default_content)
     
     print(f"Le fichier {file_name} a été créé dans {templates_dir}")
 
@@ -213,8 +210,9 @@ def setup_project():
     settings_file = os.path.join(CORE_DIR, "settings.py")
     update_allowed_hosts(settings_file) 
     create_directory(TEMPLATES_DIR)
-    create_home_html(TEMPLATES_DIR, "home.html")
-    create_about_html(TEMPLATES_DIR, "about.html")
+    create_template(TEMPLATES_DIR, 'layout')
+    create_template(TEMPLATES_DIR, 'home')
+    create_template(TEMPLATES_DIR, 'about')
     create_directory(STATIC_DIR)
     create_views_py(CORE_DIR, "views.py")
     update_urls_py(CORE_DIR, "urls.py")
