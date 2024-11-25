@@ -220,8 +220,8 @@ def setup_project():
     update_settings(CORE_DIR, "settings.py")
     create_gitignore()
     print(Fore.GREEN +f"'{PROJECT_NAME}' project successfully set up! 🎉")
-    print(Fore.GREEN +f"'{PROJECT_NAME}' now type, cd my_project 📂")
-    print(Fore.GREEN +f"'{PROJECT_NAME}' and run the server with py manage.py runserver 🔍")
+    print(Fore.CYAN +f"'{PROJECT_NAME}' now type, cd my_project 📂")
+    print(Fore.MAGENTA +f"'{PROJECT_NAME}' and run the server with py manage.py runserver 🔍")
 
 if __name__ == "__main__":
     setup_project()
