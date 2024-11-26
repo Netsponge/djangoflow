@@ -23,20 +23,22 @@ __pycache__
 
 def load_external_templates(templates_type='home', templates_path='files/'):
     """
-    Charge un template HTML depuis un fichier externe
+    Charge un template HTML depuis un fichier externe.
     """
     templates_files = {
         'home': 'home.html',
         'about': 'about.html',
-        'layout': 'layout.html'
+        'layout': 'layout.html',
+        'post_list': 'post_list.html',  # Added
+        'post_page': 'post_page.html'   # Added
     }
-    
-    
+
     if templates_type not in templates_files:
         raise ValueError(f"Type de template non valide: {templates_type}")
     
     full_path = os.path.join(os.getcwd(), templates_path, templates_files[templates_type])
-    
+    print(f"Looking for template at: {full_path}")  # Debugging
+
     # Vérifier si le fichier existe
     if not os.path.exists(full_path):
         raise FileNotFoundError(f"Le fichier template {full_path} n'existe pas")
@@ -46,6 +48,20 @@ def load_external_templates(templates_type='home', templates_path='files/'):
         templates_content = file.read()
     
     return templates_content
+
+def create_templates(templates_dir, templates_type='home', sub_dir=None):
+    """
+    Crée un fichier de template dans le dossier templates (y compris les sous-dossiers).
+    """
+    target_dir = templates_dir
+    if sub_dir:
+        target_dir = os.path.join(templates_dir, sub_dir)
+    
+    # Ensure the directory exists
+    os.makedirs(target_dir, exist_ok=True)
+    print(f"Directory ensured: {target_dir}")  # Debugging
+
+
 
 def create_directory(path):
     os.makedirs(path, exist_ok=True)
@@ -87,31 +103,51 @@ def update_allowed_hosts(settings_file):
     
     print("Updated ALLOWED_HOSTS to include '127.0.0.1' in settings.py")
 
-def create_templates(templates_dir, templates_type='home'):
+def create_templates(templates_dir, templates_type='home', sub_dir=None):
     """
-    Crée un fichier de template dans le dossier templates
+    Crée un fichier de template dans le dossier templates (y compris les sous-dossiers).
     """
-    os.makedirs(templates_dir, exist_ok=True)
+    # Resolve subdirectory path
+    target_dir = templates_dir
+    if sub_dir:
+        target_dir = os.path.join(templates_dir, sub_dir)
     
+    # Ensure the directory exists
+    os.makedirs(target_dir, exist_ok=True)
+    print(f"Directory ensured: {target_dir}")
+    
+    # Map template types to filenames
     templates_files = {
         'home': 'home.html',
         'about': 'about.html',
-        'layout': 'layout.html'
+        'layout': 'layout.html',
+        'post_list': 'post_list.html',
+        'post_page': 'post_page.html',
     }
     
-    file_name = templates_files[templates_type]
-    file_path = os.path.join(templates_dir, file_name)
+    file_name = templates_files.get(templates_type)
+    if not file_name:
+        print(f"Type de template inconnu: {templates_type}")
+        return
     
+    file_path = os.path.join(target_dir, file_name)
+    print(f"Creating template file at: {file_path}")
+    
+    # Load template content
     try:
-        templates_content = load_external_templates(templates_type)
+        # Use appropriate path for posts templates
+        templates_content = load_external_templates(templates_type, templates_path='files/templates.posts' if sub_dir == 'posts' else 'files/')
     except Exception as e:
         print(f"Erreur lors du chargement du template {templates_type}: {e}")
         return
     
+    # Write the template content to the file
     with open(file_path, 'w', encoding='utf-8') as file:
         file.write(templates_content)
     
-    print(f"Le fichier {file_name} a été créé dans {templates_dir}")
+    print(f"Le fichier {file_name} a été créé dans {target_dir}")
+
+    
 
 def create_gitignore():
     gitignore_path = os.path.join(BASE_DIR, ".gitignore")
@@ -200,6 +236,7 @@ def update_settings(core_dir, file_name):
     with open(settings_file_path, 'w') as file:
         file.writelines(new_lines)
 
+
 def setup_project():
     print(f"Setting up the '{PROJECT_NAME}' project...")
     create_directory(PROJECT_NAME)
@@ -214,14 +251,20 @@ def setup_project():
     create_templates(TEMPLATES_DIR, 'layout')
     create_templates(TEMPLATES_DIR, 'home')
     create_templates(TEMPLATES_DIR, 'about')
+    
+    # Create templates for posts in the 'posts' subdirectory
+    create_templates(TEMPLATES_DIR, 'post_list', sub_dir='posts')
+    create_templates(TEMPLATES_DIR, 'post_page', sub_dir='posts')
+    
     create_directory(STATIC_DIR)
     create_views_py(CORE_DIR, "views.py")
     update_urls_py(CORE_DIR, "urls.py")
     update_settings(CORE_DIR, "settings.py")
     create_gitignore()
-    print(Fore.GREEN +f"'{PROJECT_NAME}' project successfully set up! 🎉")
-    print(Fore.CYAN +f"'{PROJECT_NAME}' now type, cd my_project 📂")
-    print(Fore.MAGENTA +f"'{PROJECT_NAME}' and run the server with py manage.py runserver 🔍")
+    print(Fore.GREEN + f"'{PROJECT_NAME}' project successfully set up! 🎉")
+    print(Fore.CYAN + f"'{PROJECT_NAME}' now type, cd my_project 📂")
+    print(Fore.MAGENTA + f"'{PROJECT_NAME}' and run the server with py manage.py runserver 🔍")
+
 
 if __name__ == "__main__":
     setup_project()
