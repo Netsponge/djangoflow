@@ -2,8 +2,9 @@ import os
 import subprocess
 import sys
 from colorama import Fore, init
-
 init()
+import django
+from django.core.management import call_command
 
 # Project name and directory paths
 PROJECT_NAME = "my_project"
@@ -148,13 +149,14 @@ def create_posts_views_py(posts_dir, file_name):
 
     default_content = """
 from django.shortcuts import render
-from .models import Post
+
+
 # Create your views here.
 
 
 def posts_list(request):
-    posts = Post.objects.all().order_by('-date')
-    return render(request, 'posts/posts_list.html', {'posts': posts})
+    return render(request, 'posts/posts_list.html')
+
 """
     with open(file_path, 'w') as file:
         file.write(default_content)
@@ -180,8 +182,10 @@ def create_posts_urls_py(posts_dir, file_name):
     file_path = os.path.join(posts_dir, file_name)
 
     default_content = """
+
 from django.urls import path
 from . import views
+
 
 urlpatterns = [
     path('', views.posts_list),
@@ -336,6 +340,66 @@ def add_css_file(static_dir, css_source_path='files/static/style.css'):
         dest_file.write(css_content)
 
 
+def load_migration_file(posts_dir, source_path='files/migrations/0001_initial.py'):
+    """
+    Charge le fichier de migration depuis un chemin source et le copie dans le dossier migrations de l'application.
+    
+    :param posts_dir: Répertoire de l'application posts
+    :param source_path: Chemin source du fichier de migration
+    """
+    # Créer le dossier migrations s'il n'existe pas
+    migrations_dir = os.path.join(posts_dir, 'migrations')
+    os.makedirs(migrations_dir, exist_ok=True)
+
+    # Chemin de destination du fichier de migration
+    destination_path = os.path.join(migrations_dir, '0001_initial.py')
+
+    # Copier le fichier de migration
+    try:
+        with open(source_path, 'r') as source_file:
+            migration_content = source_file.read()
+        
+        with open(destination_path, 'w') as dest_file:
+            dest_file.write(migration_content)
+        
+        print(f"Migration file copied from {source_path} to {destination_path}")
+    except FileNotFoundError:
+        print(f"Source migration file not found at {source_path}")
+    except Exception as e:
+        print(f"Error copying migration file: {e}")
+        
+        
+def execute_django_migrations(base_dir):
+    """
+    Exécute les commandes makemigrations et migrate pour tous les apps.
+    
+    :param base_dir: Répertoire de base du projet Django
+    """
+    # Chemin vers manage.py
+    manage_py_path = os.path.join(base_dir, 'manage.py')
+    
+    try:
+        # Exécute makemigrations
+        subprocess.run([sys.executable, manage_py_path, 'makemigrations'], 
+                       check=True, 
+                       cwd=base_dir)
+        print(Fore.BLUE+ "Migrations created successfully ✅")
+        
+        # Exécute migrate
+        subprocess.run([sys.executable, manage_py_path, 'migrate'], 
+                       check=True, 
+                       cwd=base_dir)
+        print(Fore.BLUE + "Migrations applied successfully 🚀")
+        
+    except subprocess.CalledProcessError as e:
+        print(Fore.RED + f"Error during migrations: {e}")
+    except Exception as e:
+        print(Fore.RED + f"Unexpected error: {e}")
+
+# Dans la fonction setup_project(), vous pouvez remplacer execute_makemigrations_and_migrate() par :
+
+
+# Modifier la fonction setup_project pour inclure le chargement de la migration
 def setup_project():
     print(f"Setting up the '{PROJECT_NAME}' project...")
     create_directory(PROJECT_NAME)
@@ -344,15 +408,21 @@ def setup_project():
     activate_virtual_environment()
     install_django()
     start_django_project()
-    create_posts_app()  # Ajoutez cette ligne pour créer l'application posts
-    create_models_py(POSTS_DIR, "models.py")  # Ajoutez cette ligne pour créer le fichier models.py dans posts
-    create_posts_views_py(POSTS_DIR, "views.py")  # Ajoutez cette ligne pour créer le fichier views.py dans posts
-    create_posts_admin_py(POSTS_DIR, "admin.py")  # Ajoutez cette ligne pour créer le fichier admin.py dans posts
-    create_posts_urls_py(POSTS_DIR, "urls.py")  # Ajoutez cette ligne pour créer le fichier urls.py dans posts
-    create_core_views_py(CORE_DIR, "views.py")  # Ajoutez cette ligne pour créer le fichier views.py dans core
+    create_posts_app()
+    
+    # Charger le fichier de migration depuis files/migrations/0001_initial.py
+    load_migration_file(POSTS_DIR)
+    execute_django_migrations(BASE_DIR)
+    create_models_py(POSTS_DIR, "models.py")
+    create_posts_views_py(POSTS_DIR, "views.py")
+    create_posts_admin_py(POSTS_DIR, "admin.py")
+    create_posts_urls_py(POSTS_DIR, "urls.py")
+    create_core_views_py(CORE_DIR, "views.py")
+    
     settings_file = os.path.join(CORE_DIR, "settings.py")
     update_allowed_hosts(settings_file)
     update_installed_apps(settings_file)
+    
     create_directory(TEMPLATES_DIR)
     create_templates(TEMPLATES_DIR, 'layout')
     create_templates(TEMPLATES_DIR, 'home')
@@ -363,13 +433,16 @@ def setup_project():
     create_templates(TEMPLATES_DIR, 'post_page', sub_dir='posts')
 
     create_directory(STATIC_DIR)
-    add_css_file(STATIC_DIR, css_source_path='files/static/style.css')  # Ajoute le CSS
+    add_css_file(STATIC_DIR, css_source_path='files/static/style.css')
     update_urls_py(CORE_DIR, "urls.py")
     update_settings(CORE_DIR, "settings.py")
     create_gitignore()
+    
     print(Fore.YELLOW + f"'{PROJECT_NAME}' project successfully set up! 🙌🏻 🎉")
     print(Fore.CYAN + f"'{PROJECT_NAME}' now type, cd my_project 📂 📂")
     print(Fore.MAGENTA + f"'{PROJECT_NAME}' and run the server with py manage.py runserver 👀 🔍")
+
+
 
 if __name__ == "__main__":
     setup_project()
