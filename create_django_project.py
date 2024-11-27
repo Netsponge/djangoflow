@@ -396,7 +396,7 @@ def execute_django_migrations(base_dir):
     except Exception as e:
         print(Fore.RED + f"Unexpected error: {e}")
 
-def create_superuser(username='admin', password='admin', email='admin@example.com'):
+def create_superuser(username='admin', password='19854', email='admin@example.com'):
     """
     Crée un superutilisateur Django automatiquement.
     """
