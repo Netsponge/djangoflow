@@ -13,3 +13,8 @@
 py manage.py runserver
 ```
 
+## Create superuser
+
+```shell
+py manage.py create superuser
+```

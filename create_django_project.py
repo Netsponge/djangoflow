@@ -4,7 +4,7 @@ import sys
 from colorama import Fore, init
 init()
 import django
-from django.core.management import call_command
+from django.contrib.auth import get_user_model
 
 # Project name and directory paths
 PROJECT_NAME = "my_project"
@@ -396,10 +396,35 @@ def execute_django_migrations(base_dir):
     except Exception as e:
         print(Fore.RED + f"Unexpected error: {e}")
 
-# Dans la fonction setup_project(), vous pouvez remplacer execute_makemigrations_and_migrate() par :
+def create_superuser(username='admin', password='admin', email='admin@example.com'):
+    """
+    Crée un superutilisateur Django automatiquement.
+    """
+    # Configuration de l'environnement Django
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
 
+    try:
+        django.setup()  # Initialiser Django
+    except Exception as e:
+        print(f"Erreur lors de l'initialisation de Django : {e}")
+        return
 
-# Modifier la fonction setup_project pour inclure le chargement de la migration
+    # Obtenir le modèle d'utilisateur
+    User = get_user_model()
+
+    # Vérifier si l'utilisateur existe déjà
+    if not User.objects.filter(username=username).exists():
+        try:
+            # Créer le superutilisateur
+            User.objects.create_superuser(username=username, email=email, password=password)
+            print(f"Superutilisateur {username} créé avec succès")
+        except Exception as e:
+            print(f"Erreur lors de la création du superutilisateur : {e}")
+    else:
+        print(f"Le superutilisateur {username} existe déjà")
+
+    
+   
 def setup_project():
     print(f"Setting up the '{PROJECT_NAME}' project...")
     create_directory(PROJECT_NAME)
@@ -409,10 +434,12 @@ def setup_project():
     install_django()
     start_django_project()
     create_posts_app()
-    
+
     # Charger le fichier de migration depuis files/migrations/0001_initial.py
     load_migration_file(POSTS_DIR)
     execute_django_migrations(BASE_DIR)
+
+    # Créer les fichiers de modèle, vue, admin, urls, etc. pour l'application "posts"
     create_models_py(POSTS_DIR, "models.py")
     create_posts_views_py(POSTS_DIR, "views.py")
     create_posts_admin_py(POSTS_DIR, "admin.py")
@@ -422,25 +449,33 @@ def setup_project():
     settings_file = os.path.join(CORE_DIR, "settings.py")
     update_allowed_hosts(settings_file)
     update_installed_apps(settings_file)
-    
+
+    # Création des templates
     create_directory(TEMPLATES_DIR)
     create_templates(TEMPLATES_DIR, 'layout')
     create_templates(TEMPLATES_DIR, 'home')
     create_templates(TEMPLATES_DIR, 'about')
-
-    # Create templates for posts in the 'posts' subdirectory
     create_templates(TEMPLATES_DIR, 'posts_list', sub_dir='posts')
     create_templates(TEMPLATES_DIR, 'post_page', sub_dir='posts')
 
+    # Création du dossier static et ajout du fichier CSS
     create_directory(STATIC_DIR)
     add_css_file(STATIC_DIR, css_source_path='files/static/style.css')
+
+    # Mise à jour de urls.py et settings.py
     update_urls_py(CORE_DIR, "urls.py")
     update_settings(CORE_DIR, "settings.py")
+
+    # Création du fichier .gitignore
     create_gitignore()
-    
+
+    # Créer le superutilisateur après avoir exécuté les migrations
+    create_superuser()
+
     print(Fore.YELLOW + f"'{PROJECT_NAME}' project successfully set up! 🙌🏻 🎉")
     print(Fore.CYAN + f"'{PROJECT_NAME}' now type, cd my_project 📂 📂")
     print(Fore.MAGENTA + f"'{PROJECT_NAME}' and run the server with py manage.py runserver 👀 🔍")
+
 
 
 
