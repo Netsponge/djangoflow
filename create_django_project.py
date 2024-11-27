@@ -310,6 +310,31 @@ def create_gitignore():
     with open(gitignore_path, "w") as f:
         f.write(GITIGNORE_CONTENT)
     print(".gitignore file created with the specified rules.")
+    
+    
+def add_css_file(static_dir, css_source_path='files/static/style.css'):
+    """
+    Copie un fichier CSS vers le répertoire static de Django.
+    """
+    # Vérifie si le répertoire static existe, sinon le crée
+    if not os.path.exists(static_dir):
+        os.makedirs(static_dir)
+        print(f"Static directory created: {static_dir}")
+    
+    # Chemin de destination pour le fichier CSS
+    css_dest_path = os.path.join(static_dir, 'style.css')
+
+    if not os.path.exists(css_source_path):
+        print(f"CSS source file '{css_source_path}' not found. Ensure the path is correct.")
+        return
+
+    # Copie le fichier CSS
+    with open(css_source_path, 'r', encoding='utf-8') as source_file:
+        css_content = source_file.read()
+    
+    with open(css_dest_path, 'w', encoding='utf-8') as dest_file:
+        dest_file.write(css_content)
+
 
 def setup_project():
     print(f"Setting up the '{PROJECT_NAME}' project...")
@@ -338,6 +363,7 @@ def setup_project():
     create_templates(TEMPLATES_DIR, 'post_page', sub_dir='posts')
 
     create_directory(STATIC_DIR)
+    add_css_file(STATIC_DIR, css_source_path='files/static/style.css')  # Ajoute le CSS
     update_urls_py(CORE_DIR, "urls.py")
     update_settings(CORE_DIR, "settings.py")
     create_gitignore()

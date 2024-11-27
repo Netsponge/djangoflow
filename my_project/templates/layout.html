@@ -9,14 +9,14 @@
             Django App
         {% endblock %}
     </title>
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'style.css' %}">
     <script src="{% static 'js/main.js' %}" defer></script>
 </head>
 <body>
     <nav>
-        <a href="/">🏠</a> | 
-        <a href="/about">😀</a> | 
-        <a href="/posts">📰</a>
+        <a href="/">Home</a> | 
+        <a href="/about">About</a> | 
+        <a href="/posts">Blog</a>
     </nav>
     <main>
         {% block content %}
