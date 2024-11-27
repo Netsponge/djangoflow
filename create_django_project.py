@@ -421,28 +421,92 @@ def create_superuser(username='admin', password='19854', email='admin@example.co
     except Exception as e:
         print(f"Erreur lors de la création du superutilisateur : {e}")
 
-   
+
+
+def install_compressor():
+    """Installe django-compressor dans l'environnement virtuel."""
+    pip_path = os.path.join(VENV_DIR, 'bin', 'pip')
+    subprocess.check_call([pip_path, 'install', 'django-compressor'])
+    print("django-compressor installé dans l'environnement virtuel.")
+
+def install_tailwind():
+    """Installe Tailwind CSS via npm."""
+    try:
+        # Vérifier si npm est installé
+        subprocess.check_call(['npm', '--version'])
+        print("npm trouvé, installation de Tailwind CSS...")
+
+        # Installer tailwind CSS via npm
+        subprocess.check_call(['npm', 'install', 'tailwindcss'])
+        print("Tailwind CSS installé avec succès.")
+    except subprocess.CalledProcessError as e:
+        print("Erreur lors de l'installation de Tailwind CSS. Assurez-vous que npm est installé.")
+    except Exception as e:
+        print(f"Erreur lors de l'installation de Tailwind CSS : {e}")
+
+def add_compressor_to_settings(settings_file):
+    """Ajoute django-compressor aux paramètres de settings.py."""
+    with open(settings_file, 'r') as file:
+        content = file.readlines()
+
+    for i, line in enumerate(content):
+        if line.strip().startswith("INSTALLED_APPS"):
+            content.insert(i + 1, "    'compressor',\n")
+            break
+
+    with open(settings_file, 'w') as file:
+        file.writelines(content)
+
+    print("django-compressor ajouté à INSTALLED_APPS dans settings.py.")
+
+def configure_tailwind_in_settings(settings_file):
+    """Configure Tailwind CSS dans le settings.py de Django."""
+    with open(settings_file, 'r') as file:
+        content = file.readlines()
+
+    for i, line in enumerate(content):
+        if line.strip().startswith("STATICFILES_DIRS"):
+            content.insert(i + 1, "    os.path.join(BASE_DIR, 'static'),\n")
+            break
+
+    with open(settings_file, 'w') as file:
+        file.writelines(content)
+
+    print("Configuration de Tailwind CSS ajoutée dans settings.py.")
+
+# Fonction d'installation qui appelle toutes les autres
 def setup_project():
+    """
+    Fonction principale pour configurer un projet Django.
+    Inclut l'installation de Django, la création de l'application 'posts', la création des migrations,
+    l'ajout des fichiers essentiels, et la création du superutilisateur.
+    """
     print(f"Setting up the '{PROJECT_NAME}' project...")
+
+    # Création des répertoires de base
     create_directory(PROJECT_NAME)
     create_directory(CORE_DIR)
+
+    # Création de l'environnement virtuel et activation
     create_virtual_environment()
     activate_virtual_environment()
+
+    # Installation de Django et démarrage du projet
     install_django()
     start_django_project()
-    create_posts_app()
 
-    # Charger le fichier de migration depuis files/migrations/0001_initial.py
+    # Création de l'application 'posts' et ajout de ses fichiers
+    create_posts_app()
     load_migration_file(POSTS_DIR)
     execute_django_migrations(BASE_DIR)
 
-    # Créer les fichiers de modèle, vue, admin, urls, etc. pour l'application "posts"
     create_models_py(POSTS_DIR, "models.py")
     create_posts_views_py(POSTS_DIR, "views.py")
     create_posts_admin_py(POSTS_DIR, "admin.py")
     create_posts_urls_py(POSTS_DIR, "urls.py")
     create_core_views_py(CORE_DIR, "views.py")
-    
+
+    # Mise à jour des paramètres dans 'settings.py'
     settings_file = os.path.join(CORE_DIR, "settings.py")
     update_allowed_hosts(settings_file)
     update_installed_apps(settings_file)
@@ -455,27 +519,40 @@ def setup_project():
     create_templates(TEMPLATES_DIR, 'posts_list', sub_dir='posts')
     create_templates(TEMPLATES_DIR, 'post_page', sub_dir='posts')
 
-    # Création du dossier static et ajout du fichier CSS
+    # Création du dossier 'static' et ajout du fichier CSS
     create_directory(STATIC_DIR)
     add_css_file(STATIC_DIR, css_source_path='files/static/style.css')
 
-    # Mise à jour de urls.py et settings.py
+    # Mise à jour des fichiers 'urls.py' et 'settings.py'
     update_urls_py(CORE_DIR, "urls.py")
     update_settings(CORE_DIR, "settings.py")
 
-    # Création du fichier .gitignore
+    # Création du fichier '.gitignore'
     create_gitignore()
 
     # Créer le superutilisateur après avoir exécuté les migrations
     create_superuser()
 
+    # Installer django-compressor et Tailwind CSS si nécessaire
+    install_compressor_and_tailwind()
+
+    # Mise à jour de 'settings.py' pour ajouter les configurations de compressor et tailwind
+    add_compressor_to_settings(settings_file)
+    configure_tailwind_in_settings(settings_file)
+
     print(Fore.YELLOW + f"'{PROJECT_NAME}' project successfully set up! 🙌🏻 🎉")
-    print(Fore.CYAN + f"'{PROJECT_NAME}' now type, cd my_project 📂 📂")
+    print(Fore.CYAN + f"'{PROJECT_NAME}' now type, cd {PROJECT_NAME} 📂 📂")
     print(Fore.MAGENTA + f"'{PROJECT_NAME}' and run the server with py manage.py runserver 👀 🔍")
+
+def install_compressor_and_tailwind():
+    """
+    Installe django-compressor et django-tailwind dans l'environnement virtuel.
+    """
+    install_compressor()
+    install_tailwind()
 
 if __name__ == "__main__":
     setup_project()
-
 
 
 
