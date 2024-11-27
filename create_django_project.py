@@ -4,8 +4,9 @@ import sys
 from colorama import Fore, init
 init()
 import django
-from django.contrib.auth import get_user_model
 
+from django.contrib.auth import get_user_model
+from django.core.management import call_command
 # Project name and directory paths
 PROJECT_NAME = "my_project"
 BASE_DIR = os.path.join(os.getcwd(), PROJECT_NAME)
@@ -315,7 +316,6 @@ def create_gitignore():
         f.write(GITIGNORE_CONTENT)
     print(".gitignore file created with the specified rules.")
     
-    
 def add_css_file(static_dir, css_source_path='files/static/style.css'):
     """
     Copie un fichier CSS vers le répertoire static de Django.
@@ -338,7 +338,6 @@ def add_css_file(static_dir, css_source_path='files/static/style.css'):
     
     with open(css_dest_path, 'w', encoding='utf-8') as dest_file:
         dest_file.write(css_content)
-
 
 def load_migration_file(posts_dir, source_path='files/migrations/0001_initial.py'):
     """
@@ -368,7 +367,6 @@ def load_migration_file(posts_dir, source_path='files/migrations/0001_initial.py
     except Exception as e:
         print(f"Error copying migration file: {e}")
         
-        
 def execute_django_migrations(base_dir):
     """
     Exécute les commandes makemigrations et migrate pour tous les apps.
@@ -394,36 +392,35 @@ def execute_django_migrations(base_dir):
     except subprocess.CalledProcessError as e:
         print(Fore.RED + f"Error during migrations: {e}")
     except Exception as e:
-        print(Fore.RED + f"Unexpected error: {e}")
+        print
+        
+ 
 
 def create_superuser(username='admin', password='19854', email='admin@example.com'):
     """
-    Crée un superutilisateur Django automatiquement.
+    Crée un superutilisateur Django automatiquement avec gestion d'erreurs améliorée.
     """
-    # Configuration de l'environnement Django
+    # Configuration explicite de l'environnement Django
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
 
     try:
-        django.setup()  # Initialiser Django
+        # Configurer explicitement Django
+        django.setup()
+
+        # Vérifier si le superutilisateur existe déjà
+        User = get_user_model()
+
+        if User.objects.filter(username=username).exists():
+            print(f"Le superutilisateur {username} existe déjà")
+            return
+        
+        # Créer un superutilisateur via la commande Django sans interaction
+        call_command('createsuperuser', username=username, password=password, email=email, interactive=False)
+        print(f"Superutilisateur {username} créé avec succès ✅")
+
     except Exception as e:
-        print(f"Erreur lors de l'initialisation de Django : {e}")
-        return
+        print(f"Erreur lors de la création du superutilisateur : {e}")
 
-    # Obtenir le modèle d'utilisateur
-    User = get_user_model()
-
-    # Vérifier si l'utilisateur existe déjà
-    if not User.objects.filter(username=username).exists():
-        try:
-            # Créer le superutilisateur
-            User.objects.create_superuser(username=username, email=email, password=password)
-            print(f"Superutilisateur {username} créé avec succès")
-        except Exception as e:
-            print(f"Erreur lors de la création du superutilisateur : {e}")
-    else:
-        print(f"Le superutilisateur {username} existe déjà")
-
-    
    
 def setup_project():
     print(f"Setting up the '{PROJECT_NAME}' project...")
@@ -476,8 +473,12 @@ def setup_project():
     print(Fore.CYAN + f"'{PROJECT_NAME}' now type, cd my_project 📂 📂")
     print(Fore.MAGENTA + f"'{PROJECT_NAME}' and run the server with py manage.py runserver 👀 🔍")
 
-
-
-
 if __name__ == "__main__":
     setup_project()
+
+
+
+
+
+
+
