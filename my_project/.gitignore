@@ -1,5 +1,0 @@
-
-.DS_Store
-core/.venv
-*.sqlite3
-__pycache__
