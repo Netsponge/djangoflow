@@ -4,9 +4,9 @@ import sys
 from colorama import Fore, init
 init()
 import django
-
 from django.contrib.auth import get_user_model
 from django.core.management import call_command
+
 # Project name and directory paths
 PROJECT_NAME = "my_project"
 BASE_DIR = os.path.join(os.getcwd(), PROJECT_NAME)
@@ -15,6 +15,7 @@ VENV_DIR = os.path.join(BASE_DIR, '.venv')
 TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
 STATIC_DIR = os.path.join(BASE_DIR, "static")
 POSTS_DIR = os.path.join(BASE_DIR, 'posts')
+FILES_DIR = os.path.join(os.getcwd(), 'files')
 
 # Content for the .gitignore file
 GITIGNORE_CONTENT = """
@@ -473,6 +474,111 @@ def configure_tailwind_in_settings(settings_file):
         file.writelines(content)
 
     print("Configuration de Tailwind CSS ajoutée dans settings.py.")
+    
+def create_project_structure(project_name):
+    os.makedirs(f'{project_name}/static/css', exist_ok=True)
+    os.makedirs(f'{project_name}/templates', exist_ok=True)
+    print(f"[INFO] Project structure created for: {project_name}")
+
+def initialize_tailwind(static_dir):
+    try:
+        print("[INFO] Initializing Tailwind CSS configuration...")
+        subprocess.check_call(['npx', 'tailwindcss', 'init'])
+        print("[SUCCESS] tailwind.config.js created.")
+
+        input_css_path = os.path.join(static_dir, 'css', 'input.css')
+        os.makedirs(os.path.dirname(input_css_path), exist_ok=True)
+        with open(input_css_path, 'w') as css_file:
+            css_file.write("@tailwind base;\n@tailwind components;\n@tailwind utilities;\n")
+        print(f"[INFO] Tailwind CSS input file created at: {input_css_path}")
+
+        output_css_path = os.path.join(static_dir, 'css', 'output.css')
+        print(f"[INFO] Compiling Tailwind CSS into {output_css_path}...")
+        subprocess.check_call(['npx', 'tailwindcss', '-i', input_css_path, '-o', output_css_path, '--watch'])
+        print(f"[SUCCESS] Tailwind CSS output file generated at: {output_css_path}")
+    except subprocess.CalledProcessError as e:
+        print(f"[ERROR] An error occurred: {e}")
+        
+# Fonction pour charger un fichier à partir du répertoire 'files'
+def load_file(file_name, default_content=None):
+    file_path = os.path.join(FILES_DIR, file_name)
+    if os.path.exists(file_path):
+        with open(file_path, 'r', encoding='utf-8') as file:
+            return file.read()
+    elif default_content:
+        # Si le fichier n'existe pas, utiliser le contenu par défaut
+        with open(file_path, 'w', encoding='utf-8') as file:
+            file.write(default_content)
+        return default_content
+    else:
+        raise FileNotFoundError(f"Le fichier {file_name} n'a pas été trouvé et aucun contenu par défaut n'est spécifié.")
+
+# Contenu par défaut pour les fichiers si ils sont absents
+DEFAULT_TAILWIND_CONFIG = """
+module.exports = {
+  content: [
+    './templates/**/*.html',
+    './static/js/**/*.js',
+  ],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+}
+"""
+
+DEFAULT_POSTCSS_CONFIG = """
+module.exports = {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {},
+  },
+}
+"""
+
+DEFAULT_CSS = """
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+"""
+
+# Fonction pour installer Tailwind CSS et ses dépendances
+def install_tailwind():
+    subprocess.run(["npm", "install", "tailwindcss", "autoprefixer", "postcss-cli"], check=True)
+    subprocess.run(["npx", "tailwindcss", "init"], check=True)
+    print("Tailwind CSS a été installé et configuré.")
+
+# Fonction pour ajouter le fichier de configuration Tailwind
+def add_tailwind_config():
+    # Vérifier si le fichier de configuration Tailwind existe dans le répertoire 'files'
+    tailwind_config_content = load_file('tailwind.config.js', DEFAULT_TAILWIND_CONFIG)
+    with open(os.path.join(BASE_DIR, 'tailwind.config.js'), 'w', encoding='utf-8') as file:
+        file.write(tailwind_config_content)
+    print("Le fichier de configuration tailwind.config.js a été créé ou mis à jour.")
+
+    # Vérifier si le fichier postcss.config.js existe dans le répertoire 'files'
+    postcss_config_content = load_file('postcss.config.js', DEFAULT_POSTCSS_CONFIG)
+    with open(os.path.join(BASE_DIR, 'postcss.config.js'), 'w', encoding='utf-8') as file:
+        file.write(postcss_config_content)
+    print("Le fichier de configuration postcss.config.js a été créé ou mis à jour.")
+
+# Fonction pour mettre à jour le fichier CSS avec Tailwind
+def update_css_with_tailwind():
+    # Créer un fichier CSS pour utiliser Tailwind
+    css_content = load_file('style.css', DEFAULT_CSS)
+    with open(os.path.join(STATIC_DIR, 'style.css'), 'w', encoding='utf-8') as file:
+        file.write(css_content)
+    print("Le fichier CSS a été mis à jour avec Tailwind.")
+
+        
+
+def main():
+    project_name = 'my_project'
+    create_project_structure(project_name)
+    
+    static_dir = os.path.join(project_name, 'static')
+    initialize_tailwind(static_dir)
+    print(f"[INFO] Project '{project_name}' set up successfully!")
 
 # Fonction d'installation qui appelle toutes les autres
 def setup_project():
