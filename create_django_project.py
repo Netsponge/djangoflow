@@ -339,35 +339,56 @@ def add_css_file(static_dir, css_source_path='files/static/style.css'):
     
     with open(css_dest_path, 'w', encoding='utf-8') as dest_file:
         dest_file.write(css_content)
+        
+
 
 def load_migration_file(posts_dir, source_path='files/migrations/0001_initial.py'):
     """
-    Charge le fichier de migration depuis un chemin source et le copie dans le dossier migrations de l'application.
+    Loads a migration file from a source path and copies it to the application's migrations folder.
+    If the source file does not exist, creates a default initial migration.
     
-    :param posts_dir: Répertoire de l'application posts
-    :param source_path: Chemin source du fichier de migration
+    :param posts_dir: Directory of the posts application
+    :param source_path: Source path of the migration file
     """
-    # Créer le dossier migrations s'il n'existe pas
+    # Create migrations folder if it doesn't exist
     migrations_dir = os.path.join(posts_dir, 'migrations')
     os.makedirs(migrations_dir, exist_ok=True)
 
-    # Chemin de destination du fichier de migration
+    # Destination path for the migration file
     destination_path = os.path.join(migrations_dir, '0001_initial.py')
 
-    # Copier le fichier de migration
+    # Default migration content if source file is not found
+    default_migration_content = """
+from django.db import migrations, models
+
+class Migration(migrations.Migration):
+    initial = True
+    dependencies = []
+    operations = []
+"""
+
     try:
-        with open(source_path, 'r') as source_file:
-            migration_content = source_file.read()
-        
+        # If source file exists, copy its content
+        if os.path.exists(source_path):
+            with open(source_path, 'r') as source_file:
+                migration_content = source_file.read()
+        else:
+            # Use default migration content
+            migration_content = default_migration_content
+            print(f"Source migration file not found at '{source_path}'. Using default initial migration.")
+
+        # Write migration content to destination
         with open(destination_path, 'w') as dest_file:
             dest_file.write(migration_content)
         
-        print(f"Migration file copied from {source_path} to {destination_path}")
-    except FileNotFoundError:
-        print(f"Source migration file not found at {source_path}")
+        print(f"Migration file created at '{destination_path}'")
+
     except Exception as e:
-        print(f"Error copying migration file: {e}")
+        print(f"Error creating migration file: {e}")
+        raise
         
+        
+
 def execute_django_migrations(base_dir):
     """
     Exécute les commandes makemigrations et migrate pour tous les apps.
@@ -382,7 +403,7 @@ def execute_django_migrations(base_dir):
         subprocess.run([sys.executable, manage_py_path, 'makemigrations'], 
                        check=True, 
                        cwd=base_dir)
-        print(Fore.BLUE+ "Migrations created successfully ✅")
+        print(Fore.BLUE + "Migrations created successfully ✅")
         
         # Exécute migrate
         subprocess.run([sys.executable, manage_py_path, 'migrate'], 
@@ -393,7 +414,7 @@ def execute_django_migrations(base_dir):
     except subprocess.CalledProcessError as e:
         print(Fore.RED + f"Error during migrations: {e}")
     except Exception as e:
-        print
+        print(Fore.RED + f"Unexpected error during migrations: {e}")
         
  
 
